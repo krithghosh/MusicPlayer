@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="card_padding_half">8dp</dimen>
+    <dimen name="card_padding_quarter">4dp</dimen>
+    <dimen name="radius_2dp">2dp</dimen>
+    <dimen name="like_view_card_height">72dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+    <dimen name="text_size_small">10sp</dimen>
+    <dimen name="text_size_regular">14sp</dimen>
+    <dimen name="text_medium">16sp</dimen>
+    <dimen name="text_size_large">18sp</dimen>
+    <dimen name="elevation_4dp">4dp</dimen>
+    <dimen name="border_with_2dp">2dp</dimen>
+    <dimen name="border_with_1dp">1dp</dimen>
+    <dimen name="search_box_height">44dp</dimen>
+</resources>

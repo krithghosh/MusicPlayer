@@ -1,0 +1,77 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fl_parent_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_black_op_60"
+    android:orientation="vertical"
+    tools:context="musicplayer.krithghosh.com.musicplayer.view.fragment.SongPlayerFragment">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginLeft="@dimen/card_padding_half"
+        android:layout_marginRight="@dimen/card_padding_half"
+        android:elevation="@dimen/elevation_4dp"
+        app:contentPadding="@dimen/card_padding_half">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_song_name"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="@dimen/card_padding_half"
+                android:paddingTop="@dimen/card_padding_half"
+                android:textAppearance="@style/SongNamePlayerText" />
+
+            <SeekBar
+                android:id="@+id/seekbar_audio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginTop="16dp"
+                android:thumbTint="@color/colorPrimaryDark" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:gravity="center_horizontal"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/iv_play"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="invisible"
+                    app:srcCompat="@drawable/ic_play_button" />
+
+                <ImageView
+                    android:id="@+id/iv_pause"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="invisible"
+                    app:srcCompat="@drawable/ic_pause_button" />
+
+                <ImageView
+                    android:id="@+id/iv_reset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right|end"
+                    android:layout_marginRight="@dimen/card_padding"
+                    android:visibility="invisible"
+                    app:srcCompat="@drawable/ic_reset_button" />
+
+            </FrameLayout>
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+</FrameLayout>

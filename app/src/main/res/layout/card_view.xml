@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/card_padding_quarter"
+    android:layout_marginTop="@dimen/card_padding_quarter"
+    android:background="@color/white"
+    android:elevation="@dimen/elevation_4dp"
+    android:minHeight="@dimen/like_view_card_height"
+    app:cardCornerRadius="@dimen/radius_2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/card_padding_half"
+        android:layout_marginRight="@dimen/card_padding_half"
+        android:layout_marginTop="@dimen/card_padding_half"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/card_padding_quarter">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/iv_song"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:civ_border_color="@color/border"
+            app:civ_border_width="@dimen/border_with_1dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="@dimen/card_padding"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_song"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/SongNameText" />
+
+            <TextView
+                android:id="@+id/tv_artist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/card_padding_half"
+                android:textAppearance="@style/SongSubText" />
+        </LinearLayout>
+    </LinearLayout>
+</android.support.v7.widget.CardView>
