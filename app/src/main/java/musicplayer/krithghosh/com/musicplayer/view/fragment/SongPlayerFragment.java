@@ -62,9 +62,15 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
     SeekBar mSeekbarAudio;
 
     private boolean mUserIsSeeking = false;
-    private SongMetadata songMetadata = null;
+    private SongMetadata mSongMetadata = null;
+    private boolean mIsPlaying = false;
+    private int mCurrentPosition = 0;
+    private int mDuration = 0;
     private SongPlayerFragmentInteractionListener mEventListener;
     public static final String BUNDLE_SONG_METADATA = "bundle_song_metadata";
+    public static final String BUNDLE_SONG_IS_PLAYING = "bundle_song_is_playing";
+    public static final String BUNDLE_SONG_POSITION = "bundle_song_position";
+    public static final String BUNDLE_SONG_DURATION = "bundle_song_duration";
 
     public interface SongPlayerFragmentInteractionListener {
         void onBackPressed();
@@ -103,7 +109,11 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
         if (getArguments().getParcelable(BUNDLE_SONG_METADATA) == null) {
             return;
         }
-        songMetadata = getArguments().getParcelable(BUNDLE_SONG_METADATA);
+        Bundle bundle = getArguments();
+        mSongMetadata = bundle.getParcelable(BUNDLE_SONG_METADATA);
+        mIsPlaying = bundle.getBoolean(BUNDLE_SONG_IS_PLAYING);
+        mCurrentPosition = bundle.getInt(BUNDLE_SONG_POSITION);
+        mDuration = bundle.getInt(BUNDLE_SONG_DURATION);
         Log.d(TAG, "onCreate: finished");
     }
 
@@ -126,7 +136,11 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
         super.onStart();
         initializeUI();
         initializeSeekbar();
-        mEventListener.startPlaySong();
+        if (mIsPlaying) {
+            songPlayingState();
+        } else {
+            mEventListener.startPlaySong();
+        }
         Log.d(TAG, "onStart: finished");
     }
 
@@ -137,10 +151,10 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
     }
 
     private void initializeUI() {
-        if (songMetadata != null && !TextUtils.isEmpty(songMetadata.getSong())) {
-            songName.setText(songMetadata.getSong());
+        if (mSongMetadata != null && !TextUtils.isEmpty(mSongMetadata.getSong())) {
+            songName.setText(mSongMetadata.getSong());
         }
-        ImageUtils.setImage(getContext(), songMetadata.getCoverImage(), R.drawable.ic_music_cover, songImage);
+        ImageUtils.setImage(getContext(), mSongMetadata.getCoverImage(), R.drawable.ic_music_cover, songImage);
         progressBar.setVisibility(View.VISIBLE);
         cardView.setOnClickListener(this);
         parentLayout.setOnClickListener(this);
@@ -183,7 +197,6 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
             case R.id.card_view:
                 break;
             case R.id.fl_parent_layout:
-                mEventListener.onBackPressed();
                 break;
             case R.id.iv_play:
                 mEventListener.play();
@@ -205,6 +218,12 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
                 ButtonState(SONG_STATE_FORWARD);
                 break;
         }
+    }
+
+    public void songPlayingState() {
+        progressBar.setVisibility(View.INVISIBLE);
+        ButtonState(SONG_STATE_PLAY);
+        onDurationChanged(mDuration);
     }
 
     public void ButtonState(String state) {

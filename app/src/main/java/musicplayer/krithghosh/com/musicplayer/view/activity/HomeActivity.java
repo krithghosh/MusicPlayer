@@ -32,6 +32,9 @@ import musicplayer.krithghosh.com.musicplayer.view.fragment.SongsListFragment;
 import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.BROADCAST_MEDIA_ACTIONS;
 import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.INTENT_ACTIONS;
 import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.INTENT_VALUE;
+import static musicplayer.krithghosh.com.musicplayer.view.fragment.SongPlayerFragment.BUNDLE_SONG_DURATION;
+import static musicplayer.krithghosh.com.musicplayer.view.fragment.SongPlayerFragment.BUNDLE_SONG_IS_PLAYING;
+import static musicplayer.krithghosh.com.musicplayer.view.fragment.SongPlayerFragment.BUNDLE_SONG_POSITION;
 
 public class HomeActivity extends AppCompatActivity implements SongsListFragment.SongsListEventListener,
         SongPlayerFragment.SongPlayerFragmentInteractionListener, MediaController.MediaPlayerControl {
@@ -161,6 +164,9 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
 
     @Override
     public boolean isPlaying() {
+        if (mediaPlayerService != null && mediaBound) {
+            return mediaPlayerService.isPlaying();
+        }
         return false;
     }
 
@@ -273,11 +279,21 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
         }
     };
 
+    public Bundle getMediaStatusInBundle(Bundle bundle) {
+        if (isPlaying()) {
+            bundle.putBoolean(BUNDLE_SONG_IS_PLAYING, isPlaying());
+        }
+        bundle.putInt(BUNDLE_SONG_POSITION, getCurrentPosition());
+        bundle.putInt(BUNDLE_SONG_DURATION, getDuration());
+        return bundle;
+    }
+
     @Override
     public void showPlayer(SongMetadata mSongMetadata) {
         Bundle bundle = new Bundle();
         this.mSongMetadata = mSongMetadata;
         bundle.putParcelable(SongPlayerFragment.BUNDLE_SONG_METADATA, mSongMetadata);
+        bundle = getMediaStatusInBundle(bundle);
         mSongPlayerFragment = SongPlayerFragment.newInstance(bundle);
         AppUtils.addFragment(fragmentManager,
                 mSongPlayerFragment,
