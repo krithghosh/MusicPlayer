@@ -12,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +42,7 @@ public class SongsListFragment extends Fragment implements SongsListContract.Vie
         TextWatcher,
         View.OnFocusChangeListener,
         View.OnClickListener {
+    private static final String TAG = "SongsListFragment";
 
     @Inject
     SongsListPresenter mPresenter;
@@ -61,7 +63,6 @@ public class SongsListFragment extends Fragment implements SongsListContract.Vie
     private SongsListEventListener mEventListener;
 
     public interface SongsListEventListener {
-
         void showError(String msg);
 
         void showSnackBar(String msg);
@@ -71,7 +72,6 @@ public class SongsListFragment extends Fragment implements SongsListContract.Vie
         void hideLoader();
 
         void showPlayer(SongMetadata songMetadata);
-
     }
 
     public static SongsListFragment newInstance(Bundle bundle) {
@@ -185,6 +185,7 @@ public class SongsListFragment extends Fragment implements SongsListContract.Vie
         }
         mAdapter = new SongListAdapter(getContext(), mDataList);
         mAdapter.setOnItemClickListener((view, position, songMetadata) -> {
+            Log.d(TAG, "setOnItemClickListener: " + songMetadata.getSong());
             mEventListener.showPlayer(songMetadata);
         });
     }

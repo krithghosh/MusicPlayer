@@ -17,6 +17,7 @@ import butterknife.ButterKnife;
 import musicplayer.krithghosh.com.musicplayer.R;
 import musicplayer.krithghosh.com.musicplayer.model.SongMetadata;
 import musicplayer.krithghosh.com.musicplayer.utils.AppUtils;
+import musicplayer.krithghosh.com.musicplayer.utils.ImageUtils;
 
 /**
  * Created by kritarthaghosh on 16/12/17.
@@ -54,7 +55,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongLi
             holder.artistName.setText(item.getArtists());
         }
         if (!TextUtils.isEmpty(item.getCoverImage())) {
-            AppUtils.setImage(mContext, item.getCoverImage(), R.drawable.ic_music, holder.songImage);
+            ImageUtils.setImage(mContext, item.getCoverImage(), R.drawable.ic_music, holder.songImage);
         }
     }
 

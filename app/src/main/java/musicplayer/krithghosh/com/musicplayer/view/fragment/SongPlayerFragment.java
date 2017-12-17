@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -34,6 +35,9 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
 
     @BindView(R.id.card_view)
     CardView cardView;
+
+    @BindView(R.id.progress_bar)
+    ProgressBar progressBar;
 
     @BindView(R.id.tv_song_name)
     TextView songName;
@@ -57,6 +61,7 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
     public static final String BUNDLE_SONG_METADATA = "bundle_song_metadata";
 
     public interface SongPlayerFragmentInteractionListener {
+
         void onBackPressed();
     }
 
@@ -82,6 +87,7 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
             return;
         }
         songMetadata = getArguments().getParcelable(BUNDLE_SONG_METADATA);
+        Log.d(TAG, "onCreate: finished");
     }
 
     @Override
@@ -95,38 +101,70 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.d(TAG, "onViewCreated: finished");
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         initializeUI();
         initializeSeekbar();
         initializePlaybackController();
         mPlayerAdapter.loadMedia(songMetadata.getUrl());
-        ivButtonPlay.performClick();
+        Log.d(TAG, "onStart: finished");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mPlayerAdapter.release();
+        Log.d(TAG, "onStop: finished");
     }
 
     private void initializeUI() {
         if (songMetadata != null && !TextUtils.isEmpty(songMetadata.getSong())) {
             songName.setText(songMetadata.getSong());
         }
+        progressBar.setVisibility(View.VISIBLE);
         cardView.setOnClickListener(this);
         parentLayout.setOnClickListener(this);
         ivButtonPlay.setOnClickListener(this);
         ivButtonPause.setOnClickListener(this);
         ivButtonReset.setOnClickListener(this);
+        Log.d(TAG, "initializeUI: finished");
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        mPlayerAdapter.release();
+    private void initializeSeekbar() {
+        mSeekbarAudio.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+                    int userSelectedPosition = 0;
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                        mUserIsSeeking = true;
+                    }
+
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        if (fromUser) {
+                            userSelectedPosition = progress;
+                        }
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                        mUserIsSeeking = false;
+                        mPlayerAdapter.seekTo(userSelectedPosition);
+                    }
+                });
+        Log.d(TAG, "initializeSeekbar: finished");
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
+    private void initializePlaybackController() {
+        MediaPlayerHolder mMediaPlayerHolder = new MediaPlayerHolder(getContext());
+        mMediaPlayerHolder.setPlaybackInfoListener(new PlaybackListener());
+        mPlayerAdapter = mMediaPlayerHolder;
+        Log.d(TAG, "initializePlaybackController: finished");
     }
 
     @Override
@@ -148,7 +186,6 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
                 break;
 
             case R.id.iv_reset:
-                //mPlayerAdapter.reset();
                 mPlayerAdapter.seekTo(0);
                 ButtonState(SONG_STATE_RESET);
                 break;
@@ -175,37 +212,6 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
                 ivButtonReset.setVisibility(View.VISIBLE);
                 break;
         }
-    }
-
-    private void initializePlaybackController() {
-        MediaPlayerHolder mMediaPlayerHolder = new MediaPlayerHolder(getContext());
-        mMediaPlayerHolder.setPlaybackInfoListener(new PlaybackListener());
-        mPlayerAdapter = mMediaPlayerHolder;
-    }
-
-    private void initializeSeekbar() {
-        mSeekbarAudio.setOnSeekBarChangeListener(
-                new SeekBar.OnSeekBarChangeListener() {
-                    int userSelectedPosition = 0;
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-                        mUserIsSeeking = true;
-                    }
-
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        if (fromUser) {
-                            userSelectedPosition = progress;
-                        }
-                    }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-                        mUserIsSeeking = false;
-                        mPlayerAdapter.seekTo(userSelectedPosition);
-                    }
-                });
     }
 
     public class PlaybackListener extends PlaybackInfoListener {
@@ -235,6 +241,12 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
 
         @Override
         public void onPlaybackCompleted() {
+        }
+
+        @Override
+        public void mediaPlayerPrepared() {
+            progressBar.setVisibility(View.INVISIBLE);
+            ivButtonPlay.performClick();
         }
     }
 }

@@ -57,4 +57,7 @@ public abstract class PlaybackInfoListener {
 
     void onPlaybackCompleted() {
     }
+
+    void mediaPlayerPrepared() {
+    }
 }

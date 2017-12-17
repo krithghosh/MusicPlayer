@@ -1,6 +1,7 @@
 package musicplayer.krithghosh.com.musicplayer.view.fragment;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.util.Log;
 
@@ -9,7 +10,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import musicplayer.krithghosh.com.musicplayer.adapter.PlayerAdapter;
-import musicplayer.krithghosh.com.musicplayer.view.fragment.PlaybackInfoListener;
 
 /**
  * Created by kritarthaghosh on 16/12/17.
@@ -34,17 +34,19 @@ public class MediaPlayerHolder implements PlayerAdapter {
     private void initializeMediaPlayer() {
         if (mMediaPlayer == null) {
             mMediaPlayer = new MediaPlayer();
-            mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                    stopUpdatingCallbackWithPosition(true);
-                    if (mPlaybackInfoListener != null) {
-                        mPlaybackInfoListener.onStateChanged(PlaybackInfoListener.State.COMPLETED);
-                        mPlaybackInfoListener.onPlaybackCompleted();
-                    }
+            mMediaPlayer.setOnCompletionListener(mediaPlayer -> {
+                stopUpdatingCallbackWithPosition(true);
+                if (mPlaybackInfoListener != null) {
+                    mPlaybackInfoListener.onStateChanged(PlaybackInfoListener.State.COMPLETED);
+                    mPlaybackInfoListener.onPlaybackCompleted();
                 }
             });
+            mMediaPlayer.setOnPreparedListener(mp -> {
+                initializeProgressCallback();
+                mPlaybackInfoListener.mediaPlayerPrepared();
+            });
         }
+        Log.d(TAG, "initializeMediaPlayer: finished");
     }
 
     public void setPlaybackInfoListener(PlaybackInfoListener listener) {
@@ -58,15 +60,17 @@ public class MediaPlayerHolder implements PlayerAdapter {
         initializeMediaPlayer();
         try {
             mMediaPlayer.setDataSource(mStreamUrl);
+            Log.d(TAG, "loadMedia- setDataSource: finished");
         } catch (Exception e) {
             Log.e(TAG, "loadMedia: ", e);
         }
         try {
-            mMediaPlayer.prepare();
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mMediaPlayer.prepareAsync();
         } catch (Exception e) {
             Log.e(TAG, "loadMedia: ", e);
         }
-        initializeProgressCallback();
+        Log.d(TAG, "loadMedia: finished");
     }
 
     @Override
@@ -171,6 +175,7 @@ public class MediaPlayerHolder implements PlayerAdapter {
 
     @Override
     public void initializeProgressCallback() {
+        Log.d(TAG, "initializeProgressCallback");
         final int duration = mMediaPlayer.getDuration();
         if (mPlaybackInfoListener != null) {
             mPlaybackInfoListener.onDurationChanged(duration);

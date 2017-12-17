@@ -13,4 +13,5 @@
     <dimen name="border_with_2dp">2dp</dimen>
     <dimen name="border_with_1dp">1dp</dimen>
     <dimen name="search_box_height">44dp</dimen>
+    <dimen name="margin_large">32dp</dimen>
 </resources>

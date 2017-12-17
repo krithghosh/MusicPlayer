@@ -9,13 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-
-import com.jakewharton.picasso.OkHttp3Downloader;
-import com.squareup.picasso.Picasso;
 
 import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 
@@ -74,34 +67,5 @@ public class AppUtils {
         } else {
             return context.getResources().getDrawable(id);
         }
-    }
-
-    public static int convertDpToPx(Context context, int dp) {
-        return Math.round(
-                dp
-                        * (context.getResources().getDisplayMetrics().xdpi
-                        / DisplayMetrics.DENSITY_DEFAULT));
-    }
-
-    public static void setImage(
-            Context mContext, String imageUrl, int placeHolder, ImageView view) {
-        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-        if (layoutParams.width <= 0 || layoutParams.height <= 0) {
-            return;
-        }
-        Picasso picasso =
-                new Picasso.Builder(mContext)
-                        .downloader(new OkHttp3Downloader(mContext))
-                        .listener(
-                                (picasso1, uri, exception) -> {
-                                    Log.e(TAG, "setImage: ", exception);
-                                })
-                        .build();
-        picasso.load(imageUrl)
-                .placeholder(placeHolder)
-                .resize(layoutParams.width, layoutParams.height)
-                .noFade()
-                .centerCrop()
-                .into(view);
     }
 }
