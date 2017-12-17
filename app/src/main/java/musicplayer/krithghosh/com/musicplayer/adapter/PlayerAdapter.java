@@ -6,9 +6,13 @@ package musicplayer.krithghosh.com.musicplayer.adapter;
 
 public interface PlayerAdapter {
 
-    void loadMedia(String url);
+    void initializePlaySong();
 
     void release();
+
+    int getPosition();
+
+    int getDuration();
 
     boolean isPlaying();
 
@@ -21,4 +25,6 @@ public interface PlayerAdapter {
     void initializeProgressCallback();
 
     void seekTo(int position);
+
+    void setSongUrl(String streamUrl);
 }

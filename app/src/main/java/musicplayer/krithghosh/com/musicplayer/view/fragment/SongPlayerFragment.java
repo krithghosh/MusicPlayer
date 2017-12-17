@@ -20,9 +20,10 @@ import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import musicplayer.krithghosh.com.musicplayer.R;
-import musicplayer.krithghosh.com.musicplayer.adapter.PlayerAdapter;
 import musicplayer.krithghosh.com.musicplayer.model.SongMetadata;
+import musicplayer.krithghosh.com.musicplayer.utils.ImageUtils;
 
+import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.SONG_STATE_FORWARD;
 import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.SONG_STATE_PAUSE;
 import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.SONG_STATE_PLAY;
 import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.SONG_STATE_RESET;
@@ -35,6 +36,9 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
 
     @BindView(R.id.card_view)
     CardView cardView;
+
+    @BindView(R.id.iv_song_image)
+    ImageView songImage;
 
     @BindView(R.id.progress_bar)
     ProgressBar progressBar;
@@ -51,18 +55,31 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
     @BindView(R.id.iv_reset)
     ImageView ivButtonReset;
 
+    @BindView(R.id.iv_forward)
+    ImageView ivButtonForward;
+
     @BindView(R.id.seekbar_audio)
     SeekBar mSeekbarAudio;
 
-    private SongMetadata songMetadata = null;
-    private PlayerAdapter mPlayerAdapter;
     private boolean mUserIsSeeking = false;
+    private SongMetadata songMetadata = null;
     private SongPlayerFragmentInteractionListener mEventListener;
     public static final String BUNDLE_SONG_METADATA = "bundle_song_metadata";
 
     public interface SongPlayerFragmentInteractionListener {
-
         void onBackPressed();
+
+        void seekTo(int position);
+
+        void startPlaySong();
+
+        void play();
+
+        void pause();
+
+        void reset();
+
+        void forward();
     }
 
     public static SongPlayerFragment newInstance(Bundle bundle) {
@@ -109,15 +126,13 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
         super.onStart();
         initializeUI();
         initializeSeekbar();
-        initializePlaybackController();
-        mPlayerAdapter.loadMedia(songMetadata.getUrl());
+        mEventListener.startPlaySong();
         Log.d(TAG, "onStart: finished");
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        mPlayerAdapter.release();
         Log.d(TAG, "onStop: finished");
     }
 
@@ -125,12 +140,14 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
         if (songMetadata != null && !TextUtils.isEmpty(songMetadata.getSong())) {
             songName.setText(songMetadata.getSong());
         }
+        ImageUtils.setImage(getContext(), songMetadata.getCoverImage(), R.drawable.ic_music_cover, songImage);
         progressBar.setVisibility(View.VISIBLE);
         cardView.setOnClickListener(this);
         parentLayout.setOnClickListener(this);
         ivButtonPlay.setOnClickListener(this);
         ivButtonPause.setOnClickListener(this);
         ivButtonReset.setOnClickListener(this);
+        ivButtonForward.setOnClickListener(this);
         Log.d(TAG, "initializeUI: finished");
     }
 
@@ -154,17 +171,10 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         mUserIsSeeking = false;
-                        mPlayerAdapter.seekTo(userSelectedPosition);
+                        mEventListener.seekTo(userSelectedPosition);
                     }
                 });
         Log.d(TAG, "initializeSeekbar: finished");
-    }
-
-    private void initializePlaybackController() {
-        MediaPlayerHolder mMediaPlayerHolder = new MediaPlayerHolder(getContext());
-        mMediaPlayerHolder.setPlaybackInfoListener(new PlaybackListener());
-        mPlayerAdapter = mMediaPlayerHolder;
-        Log.d(TAG, "initializePlaybackController: finished");
     }
 
     @Override
@@ -176,18 +186,23 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
                 mEventListener.onBackPressed();
                 break;
             case R.id.iv_play:
-                mPlayerAdapter.play();
+                mEventListener.play();
                 ButtonState(SONG_STATE_PLAY);
                 break;
 
             case R.id.iv_pause:
-                mPlayerAdapter.pause();
+                mEventListener.pause();
                 ButtonState(SONG_STATE_PAUSE);
                 break;
 
             case R.id.iv_reset:
-                mPlayerAdapter.seekTo(0);
+                mEventListener.reset();
                 ButtonState(SONG_STATE_RESET);
+                break;
+
+            case R.id.iv_forward:
+                mEventListener.forward();
+                ButtonState(SONG_STATE_FORWARD);
                 break;
         }
     }
@@ -198,55 +213,54 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
                 ivButtonPlay.setVisibility(View.INVISIBLE);
                 ivButtonPause.setVisibility(View.VISIBLE);
                 ivButtonReset.setVisibility(View.VISIBLE);
+                ivButtonForward.setVisibility(View.VISIBLE);
                 break;
 
             case SONG_STATE_PAUSE:
                 ivButtonPlay.setVisibility(View.VISIBLE);
                 ivButtonPause.setVisibility(View.INVISIBLE);
-                ivButtonReset.setVisibility(View.INVISIBLE);
+                ivButtonReset.setVisibility(View.VISIBLE);
+                ivButtonForward.setVisibility(View.VISIBLE);
                 break;
 
             case SONG_STATE_RESET:
                 ivButtonPlay.setVisibility(View.INVISIBLE);
                 ivButtonPause.setVisibility(View.VISIBLE);
                 ivButtonReset.setVisibility(View.VISIBLE);
+                ivButtonForward.setVisibility(View.VISIBLE);
                 break;
+
+            case SONG_STATE_FORWARD:
+                ivButtonPlay.setVisibility(View.INVISIBLE);
+                ivButtonPause.setVisibility(View.VISIBLE);
+                ivButtonReset.setVisibility(View.VISIBLE);
+                ivButtonForward.setVisibility(View.VISIBLE);
+
         }
     }
 
-    public class PlaybackListener extends PlaybackInfoListener {
+    public void onDurationChanged(int duration) {
+        mSeekbarAudio.setMax(duration);
+        Log.d(TAG, String.format("setPlaybackDuration: setMax(%d)", duration));
+    }
 
-        @Override
-        public void onDurationChanged(int duration) {
-            mSeekbarAudio.setMax(duration);
-            Log.d(TAG, String.format("setPlaybackDuration: setMax(%d)", duration));
-        }
-
-        @Override
-        public void onPositionChanged(int position) {
-            if (!mUserIsSeeking) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    mSeekbarAudio.setProgress(position, true);
-                } else {
-                    mSeekbarAudio.setProgress(position);
-                }
-                Log.d(TAG, String.format("setPlaybackPosition: setProgress(%d)", position));
+    public void onPositionChanged(int position) {
+        if (!mUserIsSeeking) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                mSeekbarAudio.setProgress(position, true);
+            } else {
+                mSeekbarAudio.setProgress(position);
             }
+            Log.d(TAG, String.format("setPlaybackPosition: setProgress(%d)", position));
         }
+    }
 
-        @Override
-        public void onStateChanged(@State int state) {
-            String stateToString = PlaybackInfoListener.convertStateToString(state);
-        }
+    public void onPlaybackCompleted() {
+        ButtonState(SONG_STATE_PAUSE);
+    }
 
-        @Override
-        public void onPlaybackCompleted() {
-        }
-
-        @Override
-        public void mediaPlayerPrepared() {
-            progressBar.setVisibility(View.INVISIBLE);
-            ivButtonPlay.performClick();
-        }
+    public void mediaPlayerPrepared() {
+        progressBar.setVisibility(View.INVISIBLE);
+        ivButtonPlay.performClick();
     }
 }

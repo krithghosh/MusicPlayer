@@ -1,6 +1,7 @@
 package musicplayer.krithghosh.com.musicplayer.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -9,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 
 import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 
@@ -19,16 +21,31 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 public class AppUtils {
     private static final String TAG = "AppUtils";
 
+    public static final String BROADCAST_MEDIA_ACTIONS = "broadcast_media_actions";
+    public static final String INTENT_ACTIONS = "intent_actions";
+    public static final String INTENT_VALUE = "intent_value";
+    public static final String INTENT_POSITION_VALUE = "intent_position_value";
     public static final String API_SONG_LIST = "studio";
     public static final String SONG_STATE_PLAY = "play";
     public static final String SONG_STATE_PAUSE = "pause";
     public static final String SONG_STATE_RESET = "reset";
+    public static final String SONG_STATE_FORWARD = "forward";
 
     public static boolean isThereInternetConnection(Context context) {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return (networkInfo != null && networkInfo.isConnectedOrConnecting());
+    }
+
+    public static Intent formIntent(String action) {
+        Intent intent = new Intent(BROADCAST_MEDIA_ACTIONS);
+        intent.putExtra(INTENT_ACTIONS, action);
+        return intent;
+    }
+
+    public static void sendLocalBroadcast(Context mContext, Intent intent) {
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     public static void addFragment(
