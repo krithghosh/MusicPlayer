@@ -55,7 +55,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongLi
             holder.artistName.setText(item.getArtists());
         }
         if (!TextUtils.isEmpty(item.getCoverImage())) {
-            ImageUtils.setImage(mContext, item.getCoverImage(), R.drawable.ic_music, holder.songImage);
+            ImageUtils.setImage(mContext, item.getCoverImage(), R.drawable.ic_play_circular, holder.songImage);
         }
     }
 

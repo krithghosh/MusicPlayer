@@ -20,6 +20,8 @@ import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import musicplayer.krithghosh.com.musicplayer.R;
@@ -53,13 +55,15 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
 
     private Toast toast;
     private Intent playIntent;
-    private boolean paused = false, playbackPaused = false;
+    private int mCurrentSongPosition = 0;
     private Snackbar snackbar;
     private boolean mediaBound = false;
     private FragmentManager fragmentManager;
     private SongMetadata mSongMetadata = null;
     private MediaPlayerService mediaPlayerService;
     private SongPlayerFragment mSongPlayerFragment = null;
+    private List<SongMetadata> mSongsList = null;
+    private boolean paused = false, playbackPaused = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,6 +151,11 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
     }
 
     @Override
+    public void updateSongsList(List<SongMetadata> mSongsList) {
+        this.mSongsList = mSongsList;
+    }
+
+    @Override
     public void onBackPressed() {
         int backStackCount = fragmentManager.getBackStackEntryCount();
         if (backStackCount == 1) {
@@ -196,12 +205,6 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
     }
 
     @Override
-    public void startPlaySong() {
-        mediaPlayerService.setSongUrl(mSongMetadata.getUrl());
-        mediaPlayerService.initializePlaySong();
-    }
-
-    @Override
     public void play() {
         mediaPlayerService.play();
     }
@@ -234,12 +237,50 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
     }
 
     @Override
-    public void reset() {
+    public void startPlaySong() {
+        mediaPlayerService.setSongUrl(mSongMetadata.getUrl());
+        mediaPlayerService.initializePlaySong();
+    }
+
+    public void changeTrack() {
+        mediaPlayerService.setSongUrl(mSongMetadata.getUrl());
+        stopPlayingSongs();
+        mediaPlayerService.initializePlaySong();
+    }
+
+    public void stopPlayingSongs() {
+        mediaPlayerService.stop();
+        mediaPlayerService.reset();
+    }
+
+    @Override
+    public void rewind() {
+        if (getCurrentPosition() < 20000) {
+            mCurrentSongPosition = mCurrentSongPosition - 1;
+            if (mSongsList != null && mSongsList.size() > 0 && mCurrentSongPosition >= 0 && mCurrentSongPosition < (mSongsList.size() - 1)) {
+                this.mSongMetadata = mSongsList.get(mCurrentSongPosition);
+                mSongPlayerFragment.updateSongMetadata(this.mSongMetadata);
+                changeTrack();
+            } else {
+                showError(getString(R.string.no_more_tracks));
+                mCurrentSongPosition = mCurrentSongPosition + 1;
+            }
+            return;
+        }
         mediaPlayerService.seekTo(0);
     }
 
     @Override
     public void forward() {
+        mCurrentSongPosition = mCurrentSongPosition + 1;
+        if (mSongsList != null && mSongsList.size() > 0 && mCurrentSongPosition > 0 && mCurrentSongPosition < mSongsList.size()) {
+            this.mSongMetadata = mSongsList.get(mCurrentSongPosition);
+            mSongPlayerFragment.updateSongMetadata(this.mSongMetadata);
+            changeTrack();
+        } else {
+            showError(getString(R.string.no_more_tracks));
+            mCurrentSongPosition = mCurrentSongPosition - 1;
+        }
     }
 
     @Override
@@ -289,9 +330,11 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
     }
 
     @Override
-    public void showPlayer(SongMetadata mSongMetadata) {
+    public void showPlayer(SongMetadata mSongMetadata, int position) {
+        pause();
         Bundle bundle = new Bundle();
         this.mSongMetadata = mSongMetadata;
+        this.mCurrentSongPosition = position;
         bundle.putParcelable(SongPlayerFragment.BUNDLE_SONG_METADATA, mSongMetadata);
         bundle = getMediaStatusInBundle(bundle);
         mSongPlayerFragment = SongPlayerFragment.newInstance(bundle);

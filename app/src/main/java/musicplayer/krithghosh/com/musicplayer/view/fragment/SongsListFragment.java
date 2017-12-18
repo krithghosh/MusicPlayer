@@ -71,7 +71,9 @@ public class SongsListFragment extends Fragment implements SongsListContract.Vie
 
         void hideLoader();
 
-        void showPlayer(SongMetadata songMetadata);
+        void updateSongsList(List<SongMetadata> mSongsList);
+
+        void showPlayer(SongMetadata songMetadata, int position);
     }
 
     public static SongsListFragment newInstance(Bundle bundle) {
@@ -141,6 +143,7 @@ public class SongsListFragment extends Fragment implements SongsListContract.Vie
     public void showSongsList(List<SongMetadata> songsList) {
         mPresenter.unSubscribeSongsListCall();
         if (songsList == null || songsList.size() < 1) {
+            mEventListener.updateSongsList(new LinkedList<>());
             mAdapter.updateList(songsList);
             showError(getString(R.string.error_fetch_songs));
             return;
@@ -148,6 +151,7 @@ public class SongsListFragment extends Fragment implements SongsListContract.Vie
         if (etSearch.getVisibility() != View.VISIBLE) {
             etSearch.setVisibility(View.VISIBLE);
         }
+        mEventListener.updateSongsList(songsList);
         mAdapter.updateList(songsList);
     }
 
@@ -186,7 +190,7 @@ public class SongsListFragment extends Fragment implements SongsListContract.Vie
         mAdapter = new SongListAdapter(getContext(), mDataList);
         mAdapter.setOnItemClickListener((view, position, songMetadata) -> {
             Log.d(TAG, "setOnItemClickListener: " + songMetadata.getSong());
-            mEventListener.showPlayer(songMetadata);
+            mEventListener.showPlayer(songMetadata, position);
         });
     }
 

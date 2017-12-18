@@ -22,6 +22,8 @@ public interface PlayerAdapter {
 
     void pause();
 
+    void stop();
+
     void initializeProgressCallback();
 
     void seekTo(int position);

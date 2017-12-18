@@ -11,4 +11,5 @@
 
     <string name="search_error">Sorry, song list is not available</string>
     <string name="search">Search</string>
+    <string name="no_more_tracks">No more tracks available</string>
 </resources>

@@ -8,6 +8,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.concurrent.Executors;
@@ -78,7 +79,9 @@ public class MediaPlayerService extends Service implements PlayerAdapter, MediaP
     @Override
     public void initializePlaySong() {
         try {
-            // TODO: Handle invalid URL.
+            if (TextUtils.isEmpty(mStreamUrl)) {
+                return;
+            }
             mMediaPlayer.setDataSource(mStreamUrl);
             mMediaPlayer.prepareAsync();
         } catch (Exception e) {
@@ -151,7 +154,6 @@ public class MediaPlayerService extends Service implements PlayerAdapter, MediaP
     public void reset() {
         if (mMediaPlayer != null) {
             mMediaPlayer.reset();
-            initializePlaySong();
             stopUpdatingCallbackWithPosition(true);
         }
     }
@@ -164,11 +166,19 @@ public class MediaPlayerService extends Service implements PlayerAdapter, MediaP
     }
 
     @Override
+    public void stop() {
+        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            mMediaPlayer.stop();
+        }
+    }
+
+    @Override
     public void seekTo(int position) {
         if (mMediaPlayer != null) {
             mMediaPlayer.seekTo(position);
         }
     }
+
 
     /**
      * Syncs the mMediaPlayer position with mPlaybackProgressCallback via recurring task.

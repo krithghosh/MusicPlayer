@@ -28,8 +28,9 @@ public class AppUtils {
     public static final String API_SONG_LIST = "studio";
     public static final String SONG_STATE_PLAY = "play";
     public static final String SONG_STATE_PAUSE = "pause";
-    public static final String SONG_STATE_RESET = "reset";
+    public static final String SONG_STATE_REWIND = "rewind";
     public static final String SONG_STATE_FORWARD = "forward";
+    public static final String SONG_STATE_LOADING = "loading";
 
     public static boolean isThereInternetConnection(Context context) {
         ConnectivityManager connectivityManager =

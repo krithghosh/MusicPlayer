@@ -24,9 +24,10 @@ import musicplayer.krithghosh.com.musicplayer.model.SongMetadata;
 import musicplayer.krithghosh.com.musicplayer.utils.ImageUtils;
 
 import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.SONG_STATE_FORWARD;
+import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.SONG_STATE_LOADING;
 import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.SONG_STATE_PAUSE;
 import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.SONG_STATE_PLAY;
-import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.SONG_STATE_RESET;
+import static musicplayer.krithghosh.com.musicplayer.utils.AppUtils.SONG_STATE_REWIND;
 
 public class SongPlayerFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = "SongPlayerFragment";
@@ -52,8 +53,8 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
     @BindView(R.id.iv_pause)
     ImageView ivButtonPause;
 
-    @BindView(R.id.iv_reset)
-    ImageView ivButtonReset;
+    @BindView(R.id.iv_rewind)
+    ImageView ivButtonRewind;
 
     @BindView(R.id.iv_forward)
     ImageView ivButtonForward;
@@ -73,17 +74,17 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
     public static final String BUNDLE_SONG_DURATION = "bundle_song_duration";
 
     public interface SongPlayerFragmentInteractionListener {
-        void onBackPressed();
-
         void seekTo(int position);
 
         void startPlaySong();
+
+        void changeTrack();
 
         void play();
 
         void pause();
 
-        void reset();
+        void rewind();
 
         void forward();
     }
@@ -139,7 +140,7 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
         if (mIsPlaying) {
             songPlayingState();
         } else {
-            mEventListener.startPlaySong();
+            mEventListener.changeTrack();
         }
         Log.d(TAG, "onStart: finished");
     }
@@ -154,13 +155,17 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
         if (mSongMetadata != null && !TextUtils.isEmpty(mSongMetadata.getSong())) {
             songName.setText(mSongMetadata.getSong());
         }
-        ImageUtils.setImage(getContext(), mSongMetadata.getCoverImage(), R.drawable.ic_music_cover, songImage);
-        progressBar.setVisibility(View.VISIBLE);
+        ImageUtils.setImage(
+                getContext(),
+                mSongMetadata.getCoverImage(),
+                R.drawable.ic_music_player,
+                songImage);
+        buttonState(SONG_STATE_LOADING);
         cardView.setOnClickListener(this);
         parentLayout.setOnClickListener(this);
         ivButtonPlay.setOnClickListener(this);
         ivButtonPause.setOnClickListener(this);
-        ivButtonReset.setOnClickListener(this);
+        ivButtonRewind.setOnClickListener(this);
         ivButtonForward.setOnClickListener(this);
         Log.d(TAG, "initializeUI: finished");
     }
@@ -191,6 +196,19 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
         Log.d(TAG, "initializeSeekbar: finished");
     }
 
+    public void updateSongMetadata(SongMetadata mSongMetadata) {
+        this.mSongMetadata = mSongMetadata;
+        if (mSongMetadata != null && !TextUtils.isEmpty(mSongMetadata.getSong())) {
+            songName.setText(mSongMetadata.getSong());
+        }
+        ImageUtils.setImage(
+                getContext(),
+                mSongMetadata.getCoverImage(),
+                R.drawable.ic_music_player,
+                songImage);
+        buttonState(SONG_STATE_LOADING);
+    }
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -199,62 +217,78 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
             case R.id.fl_parent_layout:
                 break;
             case R.id.iv_play:
+                buttonState(SONG_STATE_PLAY);
                 mEventListener.play();
-                ButtonState(SONG_STATE_PLAY);
                 break;
 
             case R.id.iv_pause:
+                buttonState(SONG_STATE_PAUSE);
                 mEventListener.pause();
-                ButtonState(SONG_STATE_PAUSE);
                 break;
 
-            case R.id.iv_reset:
-                mEventListener.reset();
-                ButtonState(SONG_STATE_RESET);
+            case R.id.iv_rewind:
+                buttonState(SONG_STATE_REWIND);
+                mEventListener.rewind();
                 break;
 
             case R.id.iv_forward:
+                buttonState(SONG_STATE_FORWARD);
                 mEventListener.forward();
-                ButtonState(SONG_STATE_FORWARD);
                 break;
         }
     }
 
     public void songPlayingState() {
-        progressBar.setVisibility(View.INVISIBLE);
-        ButtonState(SONG_STATE_PLAY);
+        buttonState(SONG_STATE_PLAY);
         onDurationChanged(mDuration);
     }
 
-    public void ButtonState(String state) {
+    public void buttonState(String state) {
         switch (state) {
             case SONG_STATE_PLAY:
+                progressBar.setVisibility(View.INVISIBLE);
                 ivButtonPlay.setVisibility(View.INVISIBLE);
                 ivButtonPause.setVisibility(View.VISIBLE);
-                ivButtonReset.setVisibility(View.VISIBLE);
+                ivButtonRewind.setVisibility(View.VISIBLE);
                 ivButtonForward.setVisibility(View.VISIBLE);
+                mSeekbarAudio.setVisibility(View.VISIBLE);
                 break;
 
             case SONG_STATE_PAUSE:
+                progressBar.setVisibility(View.INVISIBLE);
                 ivButtonPlay.setVisibility(View.VISIBLE);
                 ivButtonPause.setVisibility(View.INVISIBLE);
-                ivButtonReset.setVisibility(View.VISIBLE);
+                ivButtonRewind.setVisibility(View.VISIBLE);
                 ivButtonForward.setVisibility(View.VISIBLE);
+                mSeekbarAudio.setVisibility(View.VISIBLE);
                 break;
 
-            case SONG_STATE_RESET:
+            case SONG_STATE_REWIND:
+                progressBar.setVisibility(View.INVISIBLE);
                 ivButtonPlay.setVisibility(View.INVISIBLE);
                 ivButtonPause.setVisibility(View.VISIBLE);
-                ivButtonReset.setVisibility(View.VISIBLE);
+                ivButtonRewind.setVisibility(View.VISIBLE);
                 ivButtonForward.setVisibility(View.VISIBLE);
+                mSeekbarAudio.setVisibility(View.VISIBLE);
                 break;
 
             case SONG_STATE_FORWARD:
+                progressBar.setVisibility(View.INVISIBLE);
                 ivButtonPlay.setVisibility(View.INVISIBLE);
                 ivButtonPause.setVisibility(View.VISIBLE);
-                ivButtonReset.setVisibility(View.VISIBLE);
+                ivButtonRewind.setVisibility(View.VISIBLE);
                 ivButtonForward.setVisibility(View.VISIBLE);
+                mSeekbarAudio.setVisibility(View.VISIBLE);
+                break;
 
+            case SONG_STATE_LOADING:
+                progressBar.setVisibility(View.VISIBLE);
+                ivButtonPlay.setVisibility(View.INVISIBLE);
+                ivButtonPause.setVisibility(View.INVISIBLE);
+                ivButtonRewind.setVisibility(View.INVISIBLE);
+                ivButtonForward.setVisibility(View.INVISIBLE);
+                mSeekbarAudio.setVisibility(View.INVISIBLE);
+                break;
         }
     }
 
@@ -275,11 +309,11 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
     }
 
     public void onPlaybackCompleted() {
-        ButtonState(SONG_STATE_PAUSE);
+        buttonState(SONG_STATE_PAUSE);
     }
 
     public void mediaPlayerPrepared() {
-        progressBar.setVisibility(View.INVISIBLE);
+        buttonState(SONG_STATE_PLAY);
         ivButtonPlay.performClick();
     }
 }

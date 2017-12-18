@@ -79,7 +79,7 @@
                     app:srcCompat="@drawable/ic_pause_button" />
 
                 <ImageView
-                    android:id="@+id/iv_reset"
+                    android:id="@+id/iv_rewind"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="left|start"
