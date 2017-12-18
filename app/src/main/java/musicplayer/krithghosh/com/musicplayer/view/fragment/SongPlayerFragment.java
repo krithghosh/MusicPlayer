@@ -243,6 +243,14 @@ public class SongPlayerFragment extends Fragment implements View.OnClickListener
         onDurationChanged(mDuration);
     }
 
+    public void stateChangePlay() {
+        buttonState(SONG_STATE_PLAY);
+    }
+
+    public void stateChangePause() {
+        buttonState(SONG_STATE_PAUSE);
+    }
+
     public void buttonState(String state) {
         switch (state) {
             case SONG_STATE_PLAY:

@@ -1,32 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/ll_parent_layout"
+    android:id="@+id/rl_parent_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
     android:fitsSystemWindows="true"
-    android:orientation="vertical"
     tools:context="musicplayer.krithghosh.com.musicplayer.view.activity.HomeActivity">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:elevation="@dimen/elevation_4dp"
-        app:popupTheme="@style/AppTheme.PopupOverlay"
-        app:titleTextAppearance="@style/Toolbar.TitleText" />
-
-    <FrameLayout
-        android:id="@+id/content_frame"
+    <LinearLayout
+        android:id="@+id/ll_parent_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:animateLayoutChanges="true" />
+        android:layout_above="@id/fl_footer_layout"
+        android:orientation="vertical">
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-</LinearLayout>
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:elevation="@dimen/elevation_4dp"
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:titleTextAppearance="@style/Toolbar.TitleText" />
+
+        <FrameLayout
+            android:id="@+id/content_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:animateLayoutChanges="true" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/fl_footer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/footer_height"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorAccent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="@dimen/card_padding"
+            android:layout_marginRight="@dimen/footer_height"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_song"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/SongNameHomeText" />
+
+            <TextView
+                android:id="@+id/tv_artist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/SongSubHomeText" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/iv_home_action"
+            android:layout_width="@dimen/footer_height"
+            android:layout_height="@dimen/footer_height"
+            android:layout_gravity="right|end"
+            android:padding="@dimen/card_padding_regular" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar_action"
+            android:layout_width="@dimen/footer_height"
+            android:layout_height="@dimen/footer_height"
+            android:layout_gravity="right|end"
+            android:indeterminate="true"
+            android:indeterminateDrawable="@drawable/pb_home_background"
+            android:padding="@dimen/card_padding" />
+    </FrameLayout>
+</RelativeLayout>

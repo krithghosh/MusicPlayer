@@ -15,9 +15,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
@@ -41,8 +43,8 @@ import static musicplayer.krithghosh.com.musicplayer.view.fragment.SongPlayerFra
 public class HomeActivity extends AppCompatActivity implements SongsListFragment.SongsListEventListener,
         SongPlayerFragment.SongPlayerFragmentInteractionListener, MediaController.MediaPlayerControl {
 
-    @BindView(R.id.ll_parent_layout)
-    LinearLayout llParentLayout;
+    @BindView(R.id.rl_parent_layout)
+    RelativeLayout rlParentLayout;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -53,8 +55,24 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
     @BindView(R.id.progress_bar)
     ProgressBar progressBar;
 
+    @BindView(R.id.fl_footer_layout)
+    FrameLayout flFooterLayout;
+
+    @BindView(R.id.tv_song)
+    TextView tvSongName;
+
+    @BindView(R.id.tv_artist)
+    TextView tvArtistName;
+
+    @BindView(R.id.iv_home_action)
+    ImageView ivHomeAction;
+
+    @BindView(R.id.progress_bar_action)
+    ProgressBar progressBarAction;
+
     private Toast toast;
     private Intent playIntent;
+    private boolean isLoading = false;
     private int mCurrentSongPosition = 0;
     private Snackbar snackbar;
     private boolean mediaBound = false;
@@ -86,7 +104,7 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
 
     private void setupToastAndProgressDialog() {
         toast = Toast.makeText(HomeActivity.this, "", Toast.LENGTH_SHORT);
-        snackbar = Snackbar.make(llParentLayout, "", Snackbar.LENGTH_INDEFINITE);
+        snackbar = Snackbar.make(rlParentLayout, "", Snackbar.LENGTH_INDEFINITE);
     }
 
     private void setupToolbar() {
@@ -155,15 +173,14 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
         this.mSongsList = mSongsList;
     }
 
-    @Override
-    public void onBackPressed() {
-        int backStackCount = fragmentManager.getBackStackEntryCount();
-        if (backStackCount == 1) {
-            finish();
-            return;
-        }
-        mSongPlayerFragment = null;
-        super.onBackPressed();
+    private void showFooterLoader() {
+        progressBarAction.setVisibility(View.VISIBLE);
+        ivHomeAction.setVisibility(View.INVISIBLE);
+    }
+
+    private void hideFooterLoader() {
+        progressBarAction.setVisibility(View.INVISIBLE);
+        ivHomeAction.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -206,6 +223,8 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
 
     @Override
     public void play() {
+        playbackPaused = false;
+        footerPlay();
         mediaPlayerService.play();
     }
 
@@ -217,6 +236,7 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
     @Override
     public void pause() {
         playbackPaused = true;
+        footerPause();
         mediaPlayerService.pause();
     }
 
@@ -238,11 +258,13 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
 
     @Override
     public void startPlaySong() {
+        isLoading = true;
         mediaPlayerService.setSongUrl(mSongMetadata.getUrl());
         mediaPlayerService.initializePlaySong();
     }
 
     public void changeTrack() {
+        isLoading = true;
         mediaPlayerService.setSongUrl(mSongMetadata.getUrl());
         stopPlayingSongs();
         mediaPlayerService.initializePlaySong();
@@ -330,11 +352,70 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
     }
 
     @Override
+    public void onBackPressed() {
+        int backStackCount = fragmentManager.getBackStackEntryCount();
+        if (backStackCount == 1) {
+            finish();
+            return;
+        }
+        mSongPlayerFragment = null;
+        if (flFooterLayout.getVisibility() == View.GONE) {
+            showFooterPlayer();
+        }
+        super.onBackPressed();
+    }
+
+    private void showFooterPlayer() {
+        if (mSongMetadata == null) {
+            tvSongName.setText("");
+            tvArtistName.setText("");
+            flFooterLayout.setVisibility(View.GONE);
+            return;
+        }
+        flFooterLayout.setVisibility(View.VISIBLE);
+        tvSongName.setText(mSongMetadata.getSong());
+        tvArtistName.setText(mSongMetadata.getArtists());
+        if (isLoading) {
+            showFooterLoader();
+        }
+        ivHomeAction.setOnClickListener(v -> {
+            if (isPlaying()) {
+                if (mSongPlayerFragment != null) {
+                    mSongPlayerFragment.stateChangePause();
+                }
+                pause();
+            } else if (playbackPaused) {
+                if (mSongPlayerFragment != null) {
+                    mSongPlayerFragment.stateChangePlay();
+                }
+                play();
+            } else {
+                showFooterLoader();
+            }
+        });
+    }
+
+    private void hideFooterPlayer() {
+        flFooterLayout.setVisibility(View.GONE);
+    }
+
+    private void footerPause() {
+        progressBarAction.setVisibility(View.GONE);
+        ivHomeAction.setImageResource(R.drawable.ic_home_play);
+    }
+
+    private void footerPlay() {
+        progressBarAction.setVisibility(View.GONE);
+        ivHomeAction.setImageResource(R.drawable.ic_home_pause);
+    }
+
+    @Override
     public void showPlayer(SongMetadata mSongMetadata, int position) {
         pause();
         Bundle bundle = new Bundle();
         this.mSongMetadata = mSongMetadata;
         this.mCurrentSongPosition = position;
+        hideFooterPlayer();
         bundle.putParcelable(SongPlayerFragment.BUNDLE_SONG_METADATA, mSongMetadata);
         bundle = getMediaStatusInBundle(bundle);
         mSongPlayerFragment = SongPlayerFragment.newInstance(bundle);
@@ -356,6 +437,9 @@ public class HomeActivity extends AppCompatActivity implements SongsListFragment
                     }
                     switch (action) {
                         case "MEDIA_PLAYER_PREPARED":
+                            isLoading = false;
+                            hideFooterLoader();
+                            ivHomeAction.setImageResource(R.drawable.ic_home_pause);
                             mSongPlayerFragment.mediaPlayerPrepared();
                             break;
                         case "POSITION_CHANGED":
